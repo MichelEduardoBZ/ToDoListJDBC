@@ -1,13 +1,15 @@
-package com.michel;
+package com.michel.view;
 
-import com.michel.controller.TaskController;
+import com.michel.entities.Task;
+import com.michel.taskDB.TaskDB;
 
 import java.util.Scanner;
+
+import static com.michel.taskDB.TaskDB.validationName;
 
 public class Main {
 
     static Scanner sc = new Scanner(System.in);
-    static TaskController taskController = new TaskController();
 
     public static void main(String[] args) {
 
@@ -21,8 +23,8 @@ public class Main {
             System.out.println("Remover uma tarefa - 2");
             System.out.println("Editar uma tarefa - 3");
             System.out.println("Mostrar todas as tarefas - 4");
-            System.out.println("Mostrar tarefa selecionado pelo ID - 5");
-            System.out.println("Sair - 5");
+            System.out.println("Mostrar tarefa selecionado pelo nome - 5");
+            System.out.println("Sair - 6");
             System.out.print("Opção: ");
             Integer optionSelected = 0;
             try {
@@ -45,9 +47,10 @@ public class Main {
                     showView();
                     break;
                 case 5:
-                    showTaskId();
+                    showTaskName();
                     break;
                 case 6:
+                    System.out.println("Saindo do programa");
                     break infinite;
             }
         }
@@ -58,48 +61,44 @@ public class Main {
         System.out.print("Informe o nome da task: ");
         String nameTask = sc.nextLine();
 
+        if (validationName(nameTask)) {
+            System.out.println("Esse nome já está cadastrado.");
+            return;
+        }
+
         System.out.print("Digite sua task: ");
         String descriptionTask = sc.nextLine();
+
         try {
-            taskController.newTask(nameTask, descriptionTask);
+            TaskDB.save(new Task(nameTask, descriptionTask));
             System.out.println("Tarefa criada com sucesso!");
         } catch (RuntimeException e) {
-            System.out.println("--- Atenção! --- \nNão se pode criar tarefas com o mesmo nome");
+            System.out.println("--- Atenção! --- \nNão se pode criar tarefas com o mesmo nome.");
         }
     }
 
     public static void removeTask() {
         System.out.println("-------------------------");
-        System.out.print("Qual o id da task que você deseja remover? ");
+        System.out.print("Qual o nome da task que você deseja remover? ");
+        String name = sc.nextLine();
 
-        Long id = 0L;
-        try {
-            id = Long.parseLong(sc.nextLine());
-            if (taskController.validation(id) == null) {
-                System.out.println("--- Atenção! --- \nId não encontrado");
-            } else {
-                taskController.deleteTask(id);
-                System.out.println("Removido com sucesso");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("--- Atenção! --- \nNenhum número informado");
+        if (!validationName(name)) {
+            System.out.println("--- Atenção! --- \nNome não encontrado");
+            return;
         }
+
+        TaskDB.delete(name);
+        System.out.println("Removido com sucesso");
+
     }
 
     public static void editTask() {
-        while (true) {
-            Long numTask = 0L;
-            System.out.print("Qual task você deseja editar? ID: ");
+            System.out.print("Qual task você deseja editar? Nome: ");
+            String nameEdit = sc.nextLine();
 
-            try {
-                numTask = Long.parseLong(sc.nextLine());
-                if (taskController.validation(numTask) == null) {
-                    System.out.println("--- Atenção! --- \nId não encontrado");
-                    break;
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("--- Atenção! --- \nNenhum número informado");
-                break;
+            if (!validationName(nameEdit)) {
+                System.out.println("--- Atenção! --- \nNome não encontrado");
+                return;
             }
 
             System.out.print("O que você deseja editar? Nome: 1 - Task: 2 ");
@@ -109,44 +108,49 @@ public class Main {
 
                 System.out.print("Digite o novo nome: ");
                 String newNameTask = sc.nextLine();
+
+                if (validationName(newNameTask)) {
+                    System.out.println("Esse nome já está cadastrado.");
+                    return;
+                }
+
                 try {
-                    taskController.editTask(numTask, editTaskNum, newNameTask);
+                    TaskDB.update(editTaskNum, nameEdit, newNameTask);
                     System.out.println("Nome atualizado com sucesso!");
                 } catch (RuntimeException e) {
                     System.out.println("--- Atenção! --- \nNão se pode criar tarefas com o mesmo nome");
                 }
-                break;
             } else if (editTaskNum == 2) {
                 System.out.print("Digite a nova tarefa: ");
                 String newTask = sc.nextLine();
-                taskController.editTask(numTask, editTaskNum, newTask);
+                TaskDB.update(editTaskNum, nameEdit, newTask);
                 System.out.println("Tarefa atualizada com sucesso!");
-                break;
             } else {
                 System.out.println("--- Atenção! ---\nOpção inexistente");
-                break;
-            }
         }
     }
 
     public static void showView() {
         System.out.println("--- Lista ---");
-        System.out.println(taskController.showView());
+
+        if (TaskDB.selectAll().isEmpty()){
+            System.out.println("Nada adicionadado");
+        } else {
+            System.out.println(TaskDB.selectAll());
+        }
     }
 
-    public static void showTaskId() {
+    public static void showTaskName() {
         System.out.println("--- Tarefa ---");
 
-        Long numId;
-        System.out.print("Informe o ID da task: ");
-        try {
-            numId = Long.parseLong(sc.nextLine());
-            System.out.println(taskController.showViewId(numId));
-            if (taskController.validation(numId) == null) {
-                System.out.println("--- Atenção! --- \nId não encontrado");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("--- Atenção! --- \nNenhum número informado");
+        System.out.print("Informe o nome da task: ");
+        String name = sc.nextLine();
+
+        if (!validationName(name)) {
+            System.out.println("--- Atenção! --- \nNome não encontrado");
+            return;
         }
+
+        System.out.println(TaskDB.selectName(name));
     }
 }

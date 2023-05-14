@@ -37,7 +37,7 @@ public class ConnectionFactory {
         }
     }
 
-    public static void close(Connection connection, Statement stmt, ResultSet rs){
+    public static void close(Connection connection, PreparedStatement stmt, ResultSet rs){
         close(connection, stmt);
         try {
             if(rs != null){

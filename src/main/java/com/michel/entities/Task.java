@@ -11,6 +11,11 @@ public class Task {
     public Task() {
     }
 
+    public Task(String name, String desc) {
+        this.name = name;
+        this.desc = desc;
+    }
+
     public Task(String name, String desc, Long id) {
         this.name = name;
         this.desc = desc;
@@ -55,9 +60,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task: " +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", desc='" + desc + '\n';
+        return "\nTask: " +
+                "id: " + id +
+                ", name: " + name +
+                ", desc: " + desc;
     }
 }
